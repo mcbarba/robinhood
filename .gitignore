@@ -1,2 +1,6 @@
 **/.env
 **/*.swp
+checkmk_data/*
+!checkmk_data/.gitkeep
+mongodb_data/*
+!mongodb_data/.gitkeep

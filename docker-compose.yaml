@@ -10,6 +10,7 @@ networks:
 services:
   checkmk:
     image: checkmk/check-mk-raw:2.3.0p6
+    platform: linux/amd64
     container_name: checkmk
     ports:
       - "162:162/udp"
@@ -23,12 +24,13 @@ services:
       - CMK_LIVESTATUS_TCP=on
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - checkmk_data:/omd/sites
+      - ./checkmk_data:/omd/sites
     networks:
       - default
 
   mongodb:
     image: mongo:4.4
+    platform: linux/amd64
     container_name: mongodb
     hostname: mongodb
     networks:
@@ -36,7 +38,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - mongodb_data:/data/db
+      - ./mongodb_data:/data/db
 
 
 
