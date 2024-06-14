@@ -29,7 +29,7 @@ obtener_datos_desde_api() {
     --data-urlencode 'parent=/' \
     --data-urlencode 'recursive=True' \
     --data-urlencode 'show_hosts=False' \
-    "$API_URL/domain-types/$TYPE/collections/all"| jq '.value[]|select(.title)'| jq '{name: .title, title: .title, parent: .extensions.path, attributes: .extensions.attributes}'| jq 'del(.attributes.meta_data)'| jq '.parent = (.parent | split("/") | .[:-1] | join("/"))')
+    "$API_URL/domain-types/$TYPE/collections/all"| jq '.value[]|select(.title)'| jq '{name: .title, title: .title, parent: .extensions.path, attributes: .extensions.attributes}'| jq 'del(.attributes.meta_data)'| jq -c '.parent = (.parent | split("/") | .[:-1] | join("/"))')
     
     # Verificar si la solicitud fue exitosa
     local http_status=$(echo "$response" | head -n 1 | cut -d$' ' -f2)
