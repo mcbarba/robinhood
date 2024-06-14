@@ -1,0 +1,42 @@
+# generar un docker compose que levante un contenedor de checkmk y otro de mongodb
+
+networks:
+  dfault:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.57.0/24
+
+services:
+  checkmk:
+    image: checkmk/check-mk-raw:2.3.0p6
+    container_name: checkmk
+    ports:
+      - "162:162/udp"
+      - "514:514/udp"
+      - "514:514/tcp"
+      - "6557:6557/tcp"
+      - "8080:5000/tcp"
+    environment:
+      - CMK_SITE_ID=monitoring
+      - CMK_PASSWORD=cmkadmin
+      - CMK_LIVESTATUS_TCP=on
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/kavra/laboratorios/robinhood/checkmk_data:/omd/sites
+    networks:
+      - default
+
+  mongodb:
+    image: mongo:4.4
+    container_name: mongodb
+    hostname: mongodb
+    networks:
+      - default
+    ports:
+      - 27017:27017
+    volumes:
+      - /home/kavra/laboratorios/robinhood/mongodb_data:/data/db
+
+
+
