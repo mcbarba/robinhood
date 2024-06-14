@@ -23,7 +23,7 @@ services:
       - CMK_LIVESTATUS_TCP=on
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /home/kavra/laboratorios/robinhood/checkmk_data:/omd/sites
+      - checkmk_data:/omd/sites
     networks:
       - default
 
@@ -36,7 +36,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - /home/kavra/laboratorios/robinhood/mongodb_data:/data/db
+      - mongodb_data:/data/db
 
 
 
