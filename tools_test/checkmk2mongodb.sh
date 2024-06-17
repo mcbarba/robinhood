@@ -15,22 +15,46 @@ SITE=$CMK_SITE
 HOST=$CMK_HOST
 PROTOCOL=$CMK_PROTOCOL
 API_URL="$PROTOCOL://$HOST/$SITE/check_mk/api/1.0"
-TYPE="folder_config"
+#TYPE="folder_config"
+#TYPE="host_tag_group"
+TYPE=$1
+
+if [ -z "$TYPE" ]; then
+  echo "Debe especificar el tipo de datos a obtener desde la API."
+  usage
+fi
+
+if [[ "$TYPE" == "folder_config" ]]; then
+  CURL_FLAG="-G"
+elif [[ "$TYPE" == "host_tag_group" ]]; then
+  CURL_FLAG=""
+fi
+
+MONGODB_COLLECTION=$TYPE
+
 
 # Función para obtener datos desde la API
 obtener_datos_desde_api() {
     local url_api="$API_URL"
     
     echo "Obteniendo datos desde la API: $url_api"
-    local response=$(curl -G -s -k\
-    --request GET \
-    --header "Authorization: Bearer $USERNAME $PASSWORD" \
-    --header "Accept: application/json" \
-    --data-urlencode 'parent=/' \
-    --data-urlencode 'recursive=True' \
-    --data-urlencode 'show_hosts=False' \
-    "$API_URL/domain-types/$TYPE/collections/all"| jq '.value[]|select(.title)'| jq '{name: .title, title: .title, parent: .extensions.path, attributes: .extensions.attributes}'| jq 'del(.attributes.meta_data)'| jq -c '.parent = (.parent | split("/") | .[:-1] | join("/"))')
-    
+    if [[ "$TYPE" == "folder_config" ]]; then
+      local response=$(curl $CURL_FLAG -s -k\
+      --request GET \
+      --header "Authorization: Bearer $USERNAME $PASSWORD" \
+      --header "Accept: application/json" \
+      --data-urlencode 'parent=/' \
+      --data-urlencode 'recursive=True' \
+      --data-urlencode 'show_hosts=False' \
+      "$API_URL/domain-types/$TYPE/collections/all"| jq '.value[]|select(.title)'| jq '{name: .title, title: .title, parent: .extensions.path, attributes: .extensions.attributes}'| jq 'del(.attributes.meta_data)'| jq -c '.parent = (.parent | split("/") | .[:-1] | join("/"))'|jq -c '.parent = if .parent == "" or .parent == null then "/" else .parent end') 
+    elif [[ "$TYPE" == "host_tag_group" ]]; then
+      local response=$(curl $CURL_FLAG -s -k\
+      --request GET \
+      --header "Authorization: Bearer $USERNAME $PASSWORD" \
+      --header "Accept: application/json" \
+      "$API_URL/domain-types/$TYPE/collections/all"| jq ".value[]"| jq -c "{ident: .title, title: .title, topic: .topic, help: .help, tags: .extensions.tags}")
+    fi
+
     # Verificar si la solicitud fue exitosa
     local http_status=$(echo "$response" | head -n 1 | cut -d$' ' -f2)
     if [[ $? == 0 ]]; then
